@@ -10,12 +10,23 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 4 {
-		log.Fatalln("Usage: shapeshift-influx <influx_url> <dbname> <pair ...>")
+	if len(os.Args) < 5 {
+		log.Fatalln("Usage: shapeshift-influx <influx_url> <dbname> <2 or more coin types ...>")
 	}
 
 	influxURL := strings.TrimSuffix(os.Args[1], "/") + "/write?db=" + os.Args[2]
-	pairs := os.Args[3:]
+	types := os.Args[3:]
+
+	n := len(types)
+	pairs := make([]string, 0, n*n-n)
+	for _, a := range types {
+		for _, b := range types {
+			if a == b {
+				continue
+			}
+			pairs = append(pairs, a+"_"+b)
+		}
+	}
 
 	txns := make(chan []transaction, 1)
 	ps := make(chan *marketInfo, len(pairs))
